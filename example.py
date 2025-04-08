@@ -39,8 +39,14 @@ api = None
 
 # Example selections and settings
 
+def saveInJson(data):
+    with open("data.json", 'w') as json_file:
+        json.dump(data, json_file, indent=4)
+
 # Let's say we want to scrape all activities using switch menu_option "p". We change the values of the below variables, IE startdate days, limit,...
-today = datetime.date.today()
+# today = datetime.date.today()
+today = datetime.date(2025, 4, 6)
+
 startdate = today - datetime.timedelta(days=7)  # Select past week
 start = 0
 limit = 100
@@ -331,12 +337,15 @@ def switch(api, i):
                     f"api.get_heart_rates('{today.isoformat()}')",
                     api.get_heart_rates(today.isoformat()),
                 )
+                saveInJson(api.get_heart_rates(today.isoformat()))
             elif i == "0":
                 # Get training readiness data for 'YYYY-MM-DD'
                 display_json(
                     f"api.get_training_readiness('{today.isoformat()}')",
                     api.get_training_readiness(today.isoformat()),
                 )
+                saveInJson(api.get_training_readiness(today.isoformat()))
+
             elif i == "/":
                 # Get daily body battery data for 'YYYY-MM-DD' to 'YYYY-MM-DD'
                 display_json(

@@ -1,4 +1,4 @@
-garth>=0.5.3
+garth
 readchar
 requests
 mypy

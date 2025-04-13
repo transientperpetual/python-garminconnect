@@ -39,13 +39,19 @@ api = None
 
 # Example selections and settings
 
-def saveInJson(data):
-    with open("data.json", 'w') as json_file:
+def saveInJson(data, folder_path, filename):
+
+    # 3. Make sure the subfolder exists
+    os.makedirs(folder_path, exist_ok=True)
+
+    file_path = os.path.join(folder_path, f'{filename}.json')
+
+    with open(file_path, 'w') as json_file:
         json.dump(data, json_file, indent=4)
 
 # Let's say we want to scrape all activities using switch menu_option "p". We change the values of the below variables, IE startdate days, limit,...
 # today = datetime.date.today()
-today = datetime.date(2025, 4, 6)
+today = datetime.date(2025, 4, 13)
 
 startdate = today - datetime.timedelta(days=7)  # Select past week
 start = 0
@@ -55,33 +61,6 @@ activitytype = ""  # Possible values are: cycling, running, swimming, multi_spor
 activityfile = "MY_ACTIVITY.fit"  # Supported file types are: .fit .gpx .tcx
 weight = 89.6
 weightunit = "kg"
-# workout_example = """
-# {
-#     'workoutId': "random_id",
-#     'ownerId': "random",
-#     'workoutName': 'Any workout name',
-#     'description': 'FTP 200, TSS 1, NP 114, IF 0.57',
-#     'sportType': {'sportTypeId': 2, 'sportTypeKey': 'cycling'},
-#     'workoutSegments': [
-#         {
-#             'segmentOrder': 1,
-#             'sportType': {'sportTypeId': 2, 'sportTypeKey': 'cycling'},
-#             'workoutSteps': [
-#                 {'type': 'ExecutableStepDTO', 'stepOrder': 1,
-#                     'stepType': {'stepTypeId': 3, 'stepTypeKey': 'interval'}, 'childStepId': None,
-#                     'endCondition': {'conditionTypeId': 2, 'conditionTypeKey': 'time'}, 'endConditionValue': 60,
-#                     'targetType': {'workoutTargetTypeId': 2, 'workoutTargetTypeKey': 'power.zone'},
-#                     'targetValueOne': 95, 'targetValueTwo': 105},
-#                 {'type': 'ExecutableStepDTO', 'stepOrder': 2,
-#                     'stepType': {'stepTypeId': 3, 'stepTypeKey': 'interval'}, 'childStepId': None,
-#                     'endCondition': {'conditionTypeId': 2, 'conditionTypeKey': 'time'}, 'endConditionValue': 120,
-#                     'targetType': {'workoutTargetTypeId': 2, 'workoutTargetTypeKey': 'power.zone'},
-#                     'targetValueOne': 114, 'targetValueTwo': 126}
-#             ]
-#         }
-#     ]
-# }
-# """
 
 menu_options = {
     "1": "Get full name",
@@ -299,6 +278,20 @@ def switch(api, i):
                     f"api.get_stats('{today.isoformat()}')",
                     api.get_stats(today.isoformat()),
                 )
+                deviceRegisteredDate = datetime.datetime.fromtimestamp(1734964851).date()
+                print(f"Device registered date: {deviceRegisteredDate}")
+
+                date_pointer = datetime.datetime.fromtimestamp(1734964851).date()
+
+                folder_path = "data/stats"  # you can change this
+
+                while date_pointer <= today:
+                    saveInJson(api.get_stats(date_pointer.isoformat()), f'stats_{date_pointer.isoformat()}', folder_path)
+                    date_pointer += datetime.timedelta(days=1)
+                print(f"Data saved")
+
+
+                # saveInJson(api.get_stats(today.isoformat()), "stats_summary")
             elif i == "4":
                 # Get activity data (to be compatible with garminconnect-ha)
                 display_json(
@@ -352,6 +345,7 @@ def switch(api, i):
                     f"api.get_body_battery('{startdate.isoformat()}, {today.isoformat()}')",
                     api.get_body_battery(startdate.isoformat(), today.isoformat()),
                 )
+                saveInJson( api.get_body_battery(startdate.isoformat(), today.isoformat())),
                 # Get daily body battery event data for 'YYYY-MM-DD'
                 display_json(
                     f"api.get_body_battery_events('{startdate.isoformat()}, {today.isoformat()}')",
@@ -620,6 +614,8 @@ def switch(api, i):
                 display_json(
                     "api.get_primary_training_device()", primary_training_device
                 )
+                saveInJson(primary_training_device, "primary_training_device")
+                display_json("PTD : ", primary_training_device)
 
             elif i == "R":
                 # Get solar data from Garmin devices
@@ -667,6 +663,15 @@ def switch(api, i):
                     f"api.get_hrv_data({today.isoformat()})",
                     api.get_hrv_data(today.isoformat()),
                 )
+
+                date_pointer = datetime.datetime.fromtimestamp(1734964851).date()
+
+                folder_path = "data/hrv"  # you can change this
+
+                while date_pointer <= today:
+                    saveInJson(api.get_hrv_data(date_pointer.isoformat()), folder_path, f'hrv_{date_pointer.isoformat()}')
+                    date_pointer += datetime.timedelta(days=1)
+                # print(f"HRV Data saved")
 
             elif i == "z":
                 # Get progress summary
